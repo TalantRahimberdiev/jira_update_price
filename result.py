@@ -100,7 +100,7 @@ def main():
         'stoimost_podkluchenia': ['customfield_10618', 'customfield_12703']
     }
 
-# 90 - 99 строки словарь из словарь состоящий из списков ТМЦ
+# custom_field_categories ---> словарь из словарь состоящий из списков ТМЦ
 
     # конверитирует из словаря в список
     all_customfields = sum(custom_fields_categories.values(), [])
