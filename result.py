@@ -1,13 +1,14 @@
-from jira import JIRA
+from jira import JIRA  # импортировать библиотеку
 
-JIRA_OPTIONS = {'server': 'https://jirasd.saima.kg'}
-"""
+JIRA_OPTIONS = {'server': 'https://jirasd.saima.kg'}  # параметр для JIRA
+
+# jql запрос для получения нужных заявок
 JQL = 'project = CS AND issuetype = "[SUB] Новый абонент - ОАП: Монтаж" AND status in (Закрытый, "СОГЛАСОВАНИЕ ОАП", "НА УТОЧНЕНИИ У БРИГАДИРА") AND createdDate >= "2023/10/01"'
-"""
 
-BLOCK_SIZE = 1000
+
+BLOCK_SIZE = 1000  # максимальный размер извлеченных заявок
 SLOJNOST_LEVELS = {'0.0': 0, '1.0': 400, '2.0': 500,
-                   '3.0': 600, '4.0': 800, '5.0': 1300}
+                   '3.0': 600, '4.0': 800, '5.0': 1300}  # сложность подключения - стоимость в зависимости от ТМЦ
 
 
 def get_tickets(jira, jql, fields):
@@ -26,7 +27,10 @@ def get_tickets(jira, jql, fields):
                 yield t
             block_num += 1
 
+# get_tickets () ---> функция по извлечению заявок из jira.
 
+
+# функция для вычисления сложности подк-я и обновления в jira заявок
 def calculate_update(jira, issue, custom_fields_categories):
     issue_dict = {
         'issue_num': 0,
@@ -60,10 +64,14 @@ def calculate_update(jira, issue, custom_fields_categories):
                 issue_dict['stoimost_podkluchenia'] = issue.fields.__dict__[
                     stoimost]
 
+# цикл проходит по ТМЦ на их наличие в заявке, при условии если ТМЦ есть и ТМЦ не явл-ся null тогда вводится в словарь
+
+    # назначется 1 если 0, чтобы не было отр.числа
     pristavka_count = 1 if issue_dict['pristavka_quantity'] == 0 else issue_dict['pristavka_quantity']
+    # назначется 1 если 0, чтобы не было отр.числа
     router_count = 1 if issue_dict['router_quantity'] == 0 else issue_dict['router_quantity']
     slojnost = SLOJNOST_LEVELS[
-        str(float(issue_dict['slojnost_podkluchenia']))] if issue_dict['slojnost_podkluchenia'] else 0
+        str(float(issue_dict['slojnost_podkluchenia']))] if issue_dict['slojnost_podkluchenia'] else 0  # вводим в переменную slojnost из SLOJNOST_LEVELS
 
     issue_dict['total_sum'] = int(200*(pristavka_count-1) + 200 *
                                   (router_count-1) + slojnost)
@@ -74,6 +82,7 @@ def calculate_update(jira, issue, custom_fields_categories):
         fields={'customfield_10618': str(issue_dict['total_sum'])})
 
     return issue_dict
+# ввод в словарь результат, 2. определяем заявку для обновления 3. обновляем заявку.
 
 
 def main():
@@ -91,11 +100,15 @@ def main():
         'stoimost_podkluchenia': ['customfield_10618', 'customfield_12703']
     }
 
+# 90 - 99 строки словарь из словарь состоящий из списков ТМЦ
+
+    # конверитирует из словаря в список
     all_customfields = sum(custom_fields_categories.values(), [])
+    # результат вызванной функции
     tickets = list(get_tickets(jira, JQL, all_customfields))
 
     issues_list = [calculate_update(jira,
-                                    ticket, custom_fields_categories) for ticket in tickets]
+                                    ticket, custom_fields_categories) for ticket in tickets]  # вызывается функция для вычисления и обновления заявок
 
     print('--------------------calculated_updated--------------------')
 
