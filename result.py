@@ -88,7 +88,7 @@ def calculate_update(jira, issue, custom_fields_categories):
 
 def main():
     jira = JIRA(options=JIRA_OPTIONS, basic_auth=(
-        'trakhimberdiev', 'Alfa_240793'))
+        'trakhimberdiev', 'password'))
 
     custom_fields_categories = {
         'routers': ['customfield_11282', 'customfield_12607', 'customfield_13908', 'customfield_13909',
